@@ -1,28 +1,24 @@
 <?php
-session_start();
-if (!isset($_SESSION['userised']) || $_SESSION['userised'] != 'Y') {
-    header('Location: login/login.html.php');
-    exit();
+include __DIR__ . '/../includes/DatabaseConnection.php';
+
+if (isset($_POST['posttext'])) {
+    $sql = 'UPDATE post SET posttext = :posttext WHERE id = :id';
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':posttext', $_POST['posttext']);
+    $stmt->bindValue(':id', $_POST['id']);
+    $stmt->execute();
+    header('location: post.php');
+} else {
+    $sql = 'SELECT * FROM post WHERE id = :id';
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindValue(':id', $_GET['id']);
+    $stmt->execute();
+    $post = $stmt->fetch();
+
+    $title = 'Edit question';
+    ob_start();
+    include __DIR__ . '/../templates/editpost.html.php';
+    $output = ob_get_clean();
+    include __DIR__ . '/../templates/admin_layout.html.php';
 }
-
-include '../includes/DatabaseConnection.php';
-include '../includes/DatabaseFunctions.php';
-
-try {
-    if (isset($_POST['posttext'])) {
-        updatepost($pdo, $_POST['postid'], $_POST['posttext']);
-        header('location: posts.php');
-    } else {
-        $post = getpost($pdo, $_GET['id']);
-        $title = 'Edit post';
-
-        ob_start();
-        include '../templates/editpost.html.php';
-        $output = ob_get_clean();
-    }
-} catch (PDOException $e) {
-    $title = 'error has occurred';
-    $output = 'Error editing post: ' . $e->getMessage();
-}
-include '../templates/admin_layout.html.php';
-                        
+?>
