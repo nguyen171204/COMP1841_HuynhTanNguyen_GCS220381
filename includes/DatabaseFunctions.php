@@ -1,59 +1,99 @@
 <?php
-function query($pdo, $sql, $parameters = []){
-  $query = $pdo->prepare($sql);
-  $query->execute($parameters);
-  return $query;
-}
-function updateJoke($pdo, $jokeId, $joketext) {
-    $query = 'UPDATE joke SET joketext = :joketext WHERE id = :id';
-    $parameters = [':joketext' => $joketext, ':id' => $jokeId];
-    query($pdo, $query, $parameters);
-}
-function deleteJoke($pdo, $id) {
-    $query = 'DELETE FROM joke WHERE id = :id';
-    $parameters = [':id' => $id];
-    query($pdo, 'DELETE FROM joke WHERE id = :id', $parameters);
+function query($pdo, $sql, $parameters = []) {
+    $query = $pdo->prepare($sql);
+    $query->execute($parameters);
+    return $query;
 }
 
-function insertJoke($pdo, $joketext, $authorid, $categoryid) {
-    $query = 'INSERT INTO joke (joketext, jokedate, authorid, categoryid)
-              VALUES (:joketext, CURDATE(), :authorid, :categoryid)';
+function updatepost($pdo, $postId, $posttext, $userid = null, $moduleid = null, $image = null, $is_admin = false)
+{
+    $query = 'UPDATE post SET posttext = :posttext';
+    $parameters = [':posttext' => $posttext, ':id' => $postId];
+
+    if ($userid !== null) {
+        $query .= ', userid = :userid';
+        $parameters[':userid'] = $userid;
+    }
+
+    if ($moduleid !== null) {
+        $query .= ', moduleid = :moduleid';
+        $parameters[':moduleid'] = $moduleid;
+    }
+
+    // Always update image field with the provided image value
+    $query .= ', image = :image';
+    $parameters[':image'] = $image;
+
+    // Only set edited_by_admin and edit_date if it's an admin edit
+    if ($is_admin) {
+        $query .= ', edited_by_admin = 1, edit_date = NOW()';
+    }
+
+    $query .= ' WHERE id = :id';
+    query($pdo, $query, $parameters);
+}
+
+
+
+function insertPost($pdo, $posttext, $userid, $moduleid) {
+    $sql = 'INSERT INTO post (posttext, postdate, userid, moduleid)
+            VALUES (:posttext, CURDATE(), :userid, :moduleid)';
     $parameters = [
-        ':joketext' => $joketext,
-        ':authorid' => $authorid,
-        ':categoryid' => $categoryid
+        ':posttext' => $posttext,
+        ':userid' => $userid,
+        ':moduleid' => $moduleid
     ];
-    query($pdo, $query, $parameters);
+    query($pdo, $sql, $parameters);
 }
 
-function getJoke($pdo, $id) {
-  $parameters = [':id' => $id];
-  $query = query($pdo, 'SELECT * FROM joke WHERE id = :id', $parameters);
-  return $query->fetch();
+function getpost($pdo, $id)
+{
+    $parameters = [':id' => $id];
+    $query = query($pdo, 'SELECT post.*, user.name, post.edit_date, module.moduleName 
+            FROM post 
+            LEFT JOIN user ON post.userid = user.id 
+            LEFT JOIN module ON post.moduleid = module.id
+            WHERE post.id = :id', $parameters);
+    return $query->fetch();
 }
 
-function totalJokes($pdo) {
-    $query = $pdo->query('SELECT COUNT(*) FROM joke');
-    $query->execute();
+function totalPosts($pdo) {
+    $query = $pdo->query('SELECT COUNT(*) FROM post');
     $row = $query->fetch();
-    return $row [0];
-}
-function allAuthors($pdo) {
-    $authors = query($pdo, 'SELECT * FROM author');
-    return $authors->fetchAll();
+    return $row[0];
 }
 
-function allCategories($pdo) {
-    $categories = query($pdo, 'SELECT * FROM category');
-    return $categories->fetchAll();
-}
-function allJokes($pdo) {
-    $jokes = query($pdo, 'SELECT joke.id, joketext, author.name AS authorname, 
-                                 author.email, category.categoryName 
-                          FROM joke
-                          INNER JOIN author ON authorid = author.id
-                          INNER JOIN category ON categoryid = category.id');
-    return $jokes->fetchAll();
+function allUsers($pdo) {
+    $users = query($pdo, 'SELECT * FROM user');
+    return $users->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function allModulen($pdo) {
+    $modules = query($pdo, 'SELECT * FROM module');
+    return $modules->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function allPosts($pdo) {
+    $sql = 'SELECT post.id, posttext, user.name AS username, 
+                   user.email, module.moduleName 
+            FROM post
+            INNER JOIN user ON userid = user.id
+            INNER JOIN module ON moduleid = module.id';
+    $posts = query($pdo, $sql);
+    return $posts->fetchAll(PDO::FETCH_ASSOC);
+}
+function deletepost($pdo, $id)
+{
+    $parameters = [':id' => $id];
+    query($pdo, 'DELETE FROM post WHERE id = :id', $parameters);
+}
+
+function getAllFeedback($pdo) {
+    $query = 'SELECT user_message.*, user.name 
+              FROM user_message 
+              LEFT JOIN user ON user_message.user_id = user.id 
+              ORDER BY time DESC';
+    $feedback = query($pdo, $query);
+    return $feedback->fetchAll();
+}
 ?>
