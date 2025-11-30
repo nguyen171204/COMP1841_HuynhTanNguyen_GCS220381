@@ -12,7 +12,7 @@
 
 <nav>
   <ul>
-    <li><a href="posts.php">Quetions List</a></li>
+    <li><a href="posts.php">Manage Questions</a></li>
     <li><a href="addpost.php">Add a new Question</a></li>
     <li><a href="../admin/login/logout.php">Public Site/Logout</a></li>
     <li><a href="message.php">Feedback</a></li>

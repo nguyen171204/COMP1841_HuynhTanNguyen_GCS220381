@@ -37,9 +37,9 @@
                         <i class="fas fa-user"></i>
                         <span>Full Name</span>
                     </label>
-                    <input type="text"
-                           name="name"
-                           id="name"
+                    <input type="text" 
+                           name="name" 
+                           id="name" 
                            required 
                            class="form-control"
                            value="<?= isset($edituser) ? htmlspecialchars($edituser['name']) : '' ?>"
@@ -51,9 +51,9 @@
                         <i class="fas fa-envelope"></i>
                         <span>Email Address</span>
                     </label>
-                    <input type="email"
-                           name="email"
-                           id="email"
+                    <input type="email" 
+                           name="email" 
+                           id="email" 
                            required 
                            class="form-control"
                            value="<?= isset($edituser) ? htmlspecialchars($edituser['email']) : '' ?>"
@@ -67,8 +67,8 @@
                     </label>
                     <div class="password-input-group">
                         <input type="password" 
-                               name="password"
-                               id="password"
+                               name="password" 
+                               id="password" 
                                class="form-control"
                                <?= isset($edituser) ? '' : 'required' ?>
                                placeholder="<?= isset($edituser) ? 'Leave blank to keep current' : 'Enter password' ?>">
@@ -126,10 +126,20 @@
                                     </span>
                                 </div>
                             </div>
-
-                            <!-- EDIT / DELETE REMOVED -->
                             <div class="user-actions">
-                                <!-- Buttons removed as requested -->
+                                <form method="post" action="" class="action-form">
+                                    <input type="hidden" name="id" value="<?= htmlspecialchars($user['id']) ?>">
+                                    <button type="submit" name="edit_user" class="btn-action btn-edit" title="Edit User">
+                                        <i class="fas fa-edit"></i>
+                                        <span class="action-label">Edit</span>
+                                    </button>
+                                    <button type="submit" name="delete_user" class="btn-action btn-delete" 
+                                            onclick="return confirm('Are you sure you want to delete this user? This action cannot be undone.')"
+                                            title="Delete User">
+                                        <i class="fas fa-trash"></i>
+                                        <span class="action-label">Delete</span>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     <?php endforeach; ?>
