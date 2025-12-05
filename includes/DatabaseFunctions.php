@@ -1,4 +1,32 @@
 <?php
+// ===== KẾT NỐI DATABASE – TẠO BIẾN $pdo =====
+if (!isset($pdo)) {
+    $host    = 'localhost';
+    $db      = 'coursework'; // ĐÚNG tên database trong phpMyAdmin
+    $user    = 'root';       // XAMPP mặc định
+    $pass    = '';           // XAMPP mặc định là mật khẩu rỗng
+    $charset = 'utf8mb4';
+
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+
+    try {
+        $pdo = new PDO($dsn, $user, $pass, $options);
+    } catch (PDOException $e) {
+        echo 'Database connection failed: ' . $e->getMessage();
+        exit;
+    }
+}
+// ===== HẾT PHẦN KẾT NỐI DB =====
+
+
+// ==== CÁC HÀM GỐC CỦA BẠN – GIỮ NGUYÊN ==== 
+
 function query($pdo, $sql, $parameters = []) {
     $query = $pdo->prepare($sql);
     $query->execute($parameters);
@@ -32,8 +60,6 @@ function updatepost($pdo, $postId, $posttext, $userid = null, $moduleid = null, 
     $query .= ' WHERE id = :id';
     query($pdo, $query, $parameters);
 }
-
-
 
 function insertPost($pdo, $posttext, $userid, $moduleid) {
     $sql = 'INSERT INTO post (posttext, postdate, userid, moduleid)
@@ -74,7 +100,7 @@ function allModulen($pdo) {
 }
 
 function allPosts($pdo) {
-    $sql = 'SELECT post.id, posttext, user.name AS username, 
+$sql = 'SELECT post.id, posttext, user.name AS username, 
                    user.email, module.moduleName 
             FROM post
             INNER JOIN user ON userid = user.id
@@ -82,6 +108,7 @@ function allPosts($pdo) {
     $posts = query($pdo, $sql);
     return $posts->fetchAll(PDO::FETCH_ASSOC);
 }
+
 function deletepost($pdo, $id)
 {
     $parameters = [':id' => $id];
